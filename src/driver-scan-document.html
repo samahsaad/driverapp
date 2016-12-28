@@ -1,0 +1,127 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="driver-scan-document">
+  
+    <template>
+<iron-ajax
+        id="ScanDocument"
+        url="http://localhost:16174/api/droppickup/CheckDocumentExist"
+        
+        handle-as="json"
+        method="GET"
+        loading="{{loading}}"
+        on-response="_handleResponse"
+         on-error="_handleError" 
+       
+        ></iron-ajax> <div id="contentContainer">
+      <content id="content"></content>
+    </div>
+        <br/><br/>
+        <div style="margin-left:10%">
+         
+        <span>Scan Document</span>
+        <paper-input id="txtdoc" type="text"  value="{{Small_Label}}" on-keydown="_txtChange" style="width:300px" ></paper-input>
+</div><br/>
+<div id="divdoc" style="float:right;margin-right:10%;margin-top:-7%"></div>
+  <paper-dialog id="dialog">
+  <h2>Warning</h2>
+  <p style="color:red;"> {{Problem}}</p>
+
+<div class="buttons">
+  
+    <paper-button dialog-confirm autofocus>Close</paper-button>
+  </div>
+    </paper-dialog>
+    <a href="/home" tabindex="-1"><paper-button raised class="custom blue" style="margin-left: 40%;
+    background-color: green;"  >Finish Scanning</paper-button></a>
+
+    </template>
+    <script>
+        Polymer({
+      is: 'driver-scan-document',
+     
+        ISDropped: {
+          type: Boolean,
+          notify: true,
+        },
+          Small_Label: {
+          type: String,
+          notify: true,
+        },
+      loading: {
+          type: Boolean,
+          notify: true,
+          value: false,
+            reflectToAttribute: true,
+        },
+          _initializeCart: function() {
+        this.ISDropped = false;
+      },
+_handleResponse : function (data){
+debugger;
+   this.ISDropped = data.detail.response;
+    if(this.ISDropped==true)
+             {
+              
+              
+
+var valid=true;
+if( this.$.divdoc.childNodes.length > 0)
+{
+var spans = this.$.divdoc.getElementsByTagName('p');
+
+for(var i = 0, l = spans.length; i < l; i++){
+    if(spans[i].innerText==this.Small_Label);
+    {
+valid=false;
+break;
+    }
+}
+
+
+}
+if(valid==true)
+{
+              var el = document.createElement("p");
+        el.textContent = this.Small_Label;
+Polymer.dom(this.$.divdoc).appendChild(el)
+}
+else
+{
+  this.Problem= "this Document Scanned before";
+  this.$.dialog.open();
+}
+   
+             }
+             else
+             {
+                this.Problem= "Invalid Document";
+this.$.dialog.open();
+             }
+             this.$.txtdoc.value="";
+  
+},
+_handleError : function (data){
+
+
+},
+
+_txtChange: function (e) {
+                
+                if (e.keyCode === 13) {
+                    debugger;
+         this.Small_Label =this.$.txtdoc.value;
+      this.$.ScanDocument.params={"Small_Label": this.Small_Label };
+             this.$.ScanDocument.generateRequest();
+            
+                }
+            }
+        })
+    </script>
+    </dom-module>

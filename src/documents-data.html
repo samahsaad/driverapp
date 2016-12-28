@@ -1,0 +1,142 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-localstorage/iron-localstorage.html">
+
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+
+<dom-module id="documents-data">
+
+  <template>
+    <iron-localstorage
+        name="documents-data"
+        value="{{documents}}"
+        on-iron-localstorage-load-empty="_initializeCart"></iron-localstorage>
+
+  <iron-ajax
+        id="DropPickupService"
+        url="/api/droppickup"
+        handle-as="json"
+        method="POST"
+        loading="{{loading}}"
+        on-response="_handleResponse"
+         on-error="_handleError"
+       
+        ></iron-ajax>
+
+  </template>
+
+  <script>
+
+    Polymer({
+
+      is: 'documents-data',
+
+      properties: {
+
+        documents: {
+          type: Array,
+          notify: true
+        },
+         token: {
+          type: String,
+          notify: true,
+        },
+
+         loading: {
+          type: Boolean,
+          notify: true,
+          value: false,
+            reflectToAttribute: true,
+        },
+        callFromSyncButton :{
+           type: Boolean,
+          value: false,
+        }
+
+      },
+      edit: function(detail) {
+      for(var i=0;i<event.detail.length;i++){
+        var x = this.findIndex(detail[i].Invoice_Document_ID);
+        if(x !=-1){
+          this.splice('documents',x, 1, detail[i]);
+        }
+      }
+  
+    },
+    findIndex : function(invoiceDocumentId){
+       for(var i=0;i<this.documents.length;i++){
+           if(this.documents[i].Invoice_Document_ID==invoiceDocumentId )
+          return i;
+        }
+        return -1;
+    },
+
+    findDocument : function(invoiceDocumentId){
+      return this.documents[this.findIndex(invoiceDocumentId)];
+    },
+    saveDocumentProblem : function (document){
+       var x = this.findIndex(document.Invoice_Document_ID);
+        if(x !=-1){
+          this.splice('documents',x, 1, document);
+        }
+
+    },
+
+      _initializeCart: function() {
+        this.documents = [];
+      },
+_handleResponse : function (data){
+
+   this.documents = data.detail.response;
+   if(this.callFromSyncButton){
+    this.fire('toast','Saved !');
+    }
+},
+_handleError : function (data){
+debugger;
+if(this.callFromSyncButton){
+ this.fire('toast','Error Save Faild !');
+ }
+},
+saveEveryTime :function(){
+    if(navigator.onLine){
+this.syncData();
+this.callFromSyncButton = false;
+    }
+},
+syncData : function (){
+debugger;
+this.callFromSyncButton = true;
+ this.$.DropPickupService.contentType="application/json";
+this.token = localStorage.getItem('accessToken');
+ this.$.DropPickupService.headers= { "Authorization": "Bearer "+this.token};
+ var documentDirty = [];
+ for(var x=0;x<this.documents.length;x++){
+      if(this.documents[x].Dirty == true){
+        var document = this.documents[x];
+        document.Dirty = 1;
+        documentDirty.push(document);
+      }
+ }
+ this.$.DropPickupService.body =JSON.stringify(documentDirty);
+ 
+
+  this.$.DropPickupService.generateRequest();
+
+  //this.documents= [{"Invoice_Document_ID":123117,"CountryName":"Bangladesh","Small_Label":"Bng [1/3]3 129390","Invoice_No":129390,"DropDate":"09/08/2016","Problem":"","Dirty":0,"PickupDate":"16/08/2016","Drop":1,"ReceiptNo":""},{"Invoice_Document_ID":123118,"CountryName":"Bangladesh","Small_Label":"Bng [2/3]3 129390","Invoice_No":129390,"DropDate":"09/08/2016","Problem":"","Dirty":0,"PickupDate":"16/08/2016","Drop":1,"ReceiptNo":""},{"Invoice_Document_ID":123119,"CountryName":"Bangladesh","Small_Label":"Bng [3/3]3 129390","Invoice_No":129390,"DropDate":"09/08/2016","Problem":"","Dirty":0,"PickupDate":"16/08/2016","Drop":1,"ReceiptNo":""},{"Invoice_Document_ID":123604,"CountryName":"China","Small_Label":"Chn [2/2]2 893750","Invoice_No":893750,"DropDate":"16/08/2016","Problem":"","Dirty":0,"PickupDate":"30/08/2016","Drop":0,"ReceiptNo":""},{"Invoice_Document_ID":123536,"CountryName":"Iraq","Small_Label":"Irq [1/1]1 105735","Invoice_No":105735,"DropDate":"16/08/2016","Problem":"","Dirty":0,"PickupDate":"22/08/2016","Drop":0,"ReceiptNo":""}];
+
+}
+    });
+
+  </script>
+
+</dom-module>

@@ -1,0 +1,188 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="shared-styles.html">
+<link rel="import" href="../bower_components/paper-datatable/paper-datatable.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<dom-module id="driver-report">
+  
+    <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+
+        padding: 10px;
+      }
+      html /deep/ paper-dialog {
+    color: green;
+}
+
+html /deep/ paper-dialog::shadow #scroller {
+    height: 300px;
+    width: 300px;
+}
+ paper-button.red {
+    background-color: var(--paper-red-800);
+    color: white;
+  }
+    </style>
+  <iron-ajax
+        id="DropPickupReport"
+        url="http://localhost:16174/api/droppickup"
+        
+        handle-as="json"
+        method="GET"
+        loading="{{loading}}"
+        on-response="_handleResponse"
+         on-error="_handleError" 
+       
+        ></iron-ajax>
+ <paper-input id="txtdate" type="date" label="Drop Pickup Date" value="{{DropDate}}" on-change="_txtChange" style="width:300px" ></paper-input>
+
+ 
+<paper-datatable data="{{documents}}">
+   <paper-datatable-column header="Country Name" property="title" editable>
+    <template>
+         <span  >{{item.Country_Name}}</span>
+    </template>
+</paper-datatable-column>
+ <paper-datatable-column header="Invoice No" property="title" editable>
+    <template>
+         <span  >{{item.Invoice_No}}</span>
+    </template>
+</paper-datatable-column>
+ <paper-datatable-column header="Customer Name" property="title" editable>
+    <template>
+         <span  >{{item.CustomerName}}</span>
+    </template>
+</paper-datatable-column>
+ <paper-datatable-column header="Document Name" property="title" editable>
+    <template>
+         <span  >{{item.Doc_Name}}</span>
+    </template>
+</paper-datatable-column>
+ <paper-datatable-column header="Consulate" property="title" editable>
+    <template>
+         <span  >{{item.Consulate}}</span>
+    </template>
+</paper-datatable-column>
+ <paper-datatable-column header="Document No." property="title" editable>
+    <template>
+         <span  >{{item.Doc_Coun}}</span>
+    </template>
+</paper-datatable-column>
+ <paper-datatable-column header="Drop" property="title" editable>
+    <template>
+         <paper-button raised class="red" style="color:red" on-click="openBy" >{{item.Drop}}</paper-button>
+    </template>
+</paper-datatable-column>
+<paper-datatable-column header="Receipt No." property="title" editable>
+    <template>
+         <span  >{{item.Receipt}}</span>
+    </template>
+</paper-datatable-column>
+</paper-datatable>
+    <paper-dialog id="dialog">
+  <h2>Problem</h2>
+  <p>{{Problem}}</p>
+<div class="buttons">
+  
+    <paper-button dialog-confirm autofocus>Close</paper-button>
+  </div>
+</paper-dialog>
+  <!--  <template is="dom-repeat" items="{{documents}}" >
+       
+        <div class="card item"><h1>{{item.Country_Name}}</h1>
+        <div>Invoice No. :<span>{{item.Invoice_No}}</span></div>
+          <div>Customer Name :<span>{{item.CustomerName}}</span></div>
+         <div>Document Type :<span>{{item.Doc_Name}}</span></div>
+         <div>Document No. :<span>{{item.Doc_Coun}}</span></div>
+          <div>Drop :<span>{{item.Drop}}</span></div>
+           <div>Receipt No. :<span>{{item.Receipt}}</span></div>
+        </div>
+    </template>!-->
+ 
+       </template>
+<script>
+
+     Polymer({
+      is: 'driver-report',
+        documents: {
+          type: Array,
+          notify: true
+        },
+        DropDate: {
+          type: String,
+          notify: true,
+        },
+      loading: {
+          type: Boolean,
+          notify: true,
+          value: false,
+            reflectToAttribute: true,
+        },
+          _initializeCart: function() {
+        this.documents = [];
+      },
+_handleResponse : function (data){
+
+   this.documents = data.detail.response;
+  
+},
+_handleError : function (data){
+debugger;
+
+},
+ _txtChange : function() {
+     debugger;
+     this.DropDate =this.$.txtdate.value;
+      this.$.DropPickupReport.params={"Date": this.DropDate };
+             this.$.DropPickupReport.generateRequest();
+         },
+        _getParams: function()
+      {
+          debugger;
+          var date = new Date();
+
+    var day = date.getDate();
+    var month = date.getMonth() + 1;
+    var year = date.getFullYear();
+
+    if (month < 10) month = "0" + month;
+    if (day < 10) day = "0" + day;
+
+    var today = year + "-" + month + "-" + day;      
+          this.DropDate=today;
+        return ('{"Date":"' + this.DropDate + '"}');
+      },
+
+ready: function() {
+    debugger;
+    var date = new Date();
+
+    var day = date.getDate();
+    var month = date.getMonth() + 1;
+    var year = date.getFullYear();
+
+    if (month < 10) month = "0" + month;
+    if (day < 10) day = "0" + day;
+
+    var today = year + "-" + month + "-" + day;       
+    this.DropDate=today;
+  
+    this.$.DropPickupReport.params={"Date": this.DropDate };
+           this.$.DropPickupReport.generateRequest();
+            console.log(this.DropDate)
+        },
+        openBy: function(e) {
+   debugger;
+     this.Problem= e.model.item.Problem;
+    this.$.dialog.open();
+  
+  }
+     });
+
+
+</script>
+</dom-module>

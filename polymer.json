@@ -1,0 +1,22 @@
+{
+  "entrypoint": "index.html",
+  "shell": "src/driver-app.html",
+  "fragments": [
+   "src/driver-login.html",
+    "src/driver-home.html",
+    "src/driver-drop.html",
+    "src/driver-pickup.html",
+    "src/driver-problem.html",
+    "src/driver-view404.html",
+    "src/driver-scan-document.html"
+  ],
+  "sourceGlobs": [
+   "src/**/*",
+   "images/**/*",
+   "bower.json"
+  ],
+  "includeDependencies": [
+    "manifest.json",
+    "bower_components/webcomponentsjs/webcomponents-lite.min.js"
+  ]
+}

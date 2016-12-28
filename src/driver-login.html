@@ -1,0 +1,82 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="driver-login">
+ <style include="shared-styles">
+      :host {
+        display: block;
+
+        padding: 10px;
+      }
+    </style>
+<template>
+ <iron-ajax
+        id="login"
+        url="/TOKEN"
+        handle-as="json"
+        method ="Post"
+        loading="{{loading}}"
+       headers= '{"Content-Type": "application/x-www-form-urlencoded"}'
+        on-response="_handleResponse"
+         on-error="_handleError"
+        ></iron-ajax>
+
+  <div class="card">
+  <paper-input name="name" label="Name" required auto-validate value ="{{userlogin.username}}"></paper-input>
+  <paper-input name="password" label="Password" type="password" required auto-validate value ="{{userlogin.password}}"></paper-input>
+  <paper-button raised on-click="_submit">Login</paper-button>
+</div>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'driver-login',
+       properties: {
+       userlogin :  {
+          type: Object,
+          notify: true,
+          value: {"grant_type": "password", "username":"nader@nader.com", "password": "n@N123456"}
+        } ,
+         loading: {
+          type: Boolean,
+          notify: true,
+          value: false
+        }
+
+      },
+      _submit : function(){
+     if(this.userlogin.username !="" && this.userlogin.password !="" ){
+
+       this.$.login.body =this.userlogin;
+        this.$.login.generateRequest();
+     }else{
+        this.fire('toast','Please Entre UserName and Password!');
+     }
+      
+      },
+     _handleResponse : function (data){
+    debugger;
+    localStorage.setItem('accessToken',data.detail.response.access_token);
+    localStorage.setItem('userName',data.detail.response.userName);
+    location.href="/";
+},
+_handleError : function (data){
+    debugger;
+    this.fire('toast','your User Name or Password Incorrect !');
+},
+    });
+  </script>
+</dom-module>
